@@ -19,17 +19,9 @@
   (client/call-remote 'now)
 
 
-  (require 'clj-http.client)
-  (client/set-post-fn clj-http.client/post)
-
-  (macroexpand-1 '(fe/defexport
-                    info
-                    [& args]
-                    (f/build-form
-                      (let [prop (into {} (System/getProperties))
-                            cpu-id (f/get-cpu-id)]
-                        (assoc (select-keys prop ["os.name" "os.version" "os.arch" "native.encoding" "user.language" "user.name"])
-                          "cpu.id" cpu-id)))))
+  (do
+    (require 'clj-http.client)
+    (client/set-post-fn clj-http.client/post))
 
   (fe/defexport
     info
@@ -47,4 +39,11 @@
   (client/call-remote 'not-found)
 
   (load-string "")
+
+  (->
+    [6 [0 [:type-error [:not-found]]]]
+    last last
+    (as-> v (into #{} v))
+    (mapv [:content-type :code :result :raw-extensions])
+    )
   )
